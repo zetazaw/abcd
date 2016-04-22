@@ -1,14 +1,19 @@
 package com.iscistech.mobile.locationtest;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,6 +27,10 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class TheMainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -74,7 +83,8 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
-            //go geo coder
+            //go geo-coder
+            new FetchLocation().execute(mLastLocation);
         } else {
             Log.d(LOG_TAG, "Location is not available");
             createLocationRequest();
@@ -98,6 +108,11 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+    }
+
+    protected void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient, this);
     }
 
 
@@ -160,6 +175,12 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     @Override
+    protected void onPause() {
+        stopLocationUpdates();
+        super.onPause();
+    }
+
+    @Override
     protected void onStop() {
         mGoogleApiClient.disconnect();
         super.onStop();
@@ -168,5 +189,55 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onLocationChanged(Location location) {
         Log.d(LOG_TAG, "Updated Location>" +location.toString());
+        if (location!=null){
+            new FetchLocation().execute(location);
+        }
+    }
+
+
+    class FetchLocation extends AsyncTask<Location, Integer, String> {
+
+        @Override
+        protected String doInBackground(Location... params) {
+            Location location = params[0];
+            if (location != null){
+                Log.d(LOG_TAG, "Lat :"+location.getLatitude());
+                Log.d(LOG_TAG, "Long :"+location.getLongitude());
+                Log.d(LOG_TAG, "Accuracy :"+location.getAccuracy());
+
+                Geocoder geocoder = new Geocoder(TheMainActivity.this, Locale.getDefault());
+                if (geocoder.isPresent()){
+                    List<Address> addresses;
+                    try{
+                        addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+                        if (addresses != null && addresses.size()>0){
+
+                            return addresses.get(0).getCountryName();
+                        }
+                    } catch (IOException e) {
+
+                        Log.d(LOG_TAG, "Geo Coder : "+e.getMessage());
+
+                    }
+                }
+
+            }else {
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+
+
+            if (s!=null){
+                Log.d(LOG_TAG, ">>>>>>>>>>>>>>>>>>>>>>"+s);
+            }else {
+                Log.d(LOG_TAG, "<<<No Data>>>");
+            }
+        }
     }
 }
