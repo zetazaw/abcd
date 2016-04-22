@@ -1,0 +1,2 @@
+get Industry/GetAllIndustry
+set Product/ProductByIndustryForAndroid //{ "PageNum":1,"PageSize":10, "IndustryId":4071 , "uid":0, "bycountry":"malaysia" }  
