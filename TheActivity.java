@@ -32,9 +32,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class TheMainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class TheActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    final String LOG_TAG = TheMainActivity.class.getSimpleName();
+    final String LOG_TAG = TheActivity.class.getSimpleName();
 
     final int REQUEST_CHECK_SETTINGS = 89;
 
@@ -62,7 +62,6 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_CHECK_SETTINGS) {
                 Log.d(LOG_TAG, "Setting changed!");
-
                 createLocationRequest();
             }
         }
@@ -83,7 +82,7 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
-            //go geo-coder
+            //go geo-coder Async task. Can also use IntentService with broadcast receiver
             new FetchLocation().execute(mLastLocation);
         } else {
             Log.d(LOG_TAG, "Location is not available");
@@ -133,7 +132,7 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
             @Override
             public void onResult(LocationSettingsResult locationSettingsResult) {
                 final Status status = locationSettingsResult.getStatus();
-                //final LocationSettingsStates states= locationSettingsResult.getLocationSettingsStates();
+                
                 switch (status.getStatusCode()){
                     case LocationSettingsStatusCodes.SUCCESS:
                         Log.d(LOG_TAG, "Setting Success");
@@ -166,8 +165,6 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
 
     }
 
-
-
     @Override
     protected void onStart() {
         mGoogleApiClient.connect();
@@ -189,11 +186,10 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onLocationChanged(Location location) {
         Log.d(LOG_TAG, "Updated Location>" +location.toString());
-        if (location!=null){
+        if (location!=null){ // it was stupid checking
             new FetchLocation().execute(location);
         }
     }
-
 
     class FetchLocation extends AsyncTask<Location, Integer, String> {
 
@@ -231,12 +227,10 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
 
         @Override
         protected void onPostExecute(String s) {
-
-
             if (s!=null){
-                Log.d(LOG_TAG, ">>>>>>>>>>>>>>>>>>>>>>"+s);
+                Log.d(LOG_TAG, "Async Result>"+s);
             }else {
-                Log.d(LOG_TAG, "<<<No Data>>>");
+                Log.d(LOG_TAG, "<<<Async Result No Data>>>");
             }
         }
     }
