@@ -32,6 +32,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+/*
+I use compile 'com.google.android.gms:play-services:8.4.0' dependenciy to get device location country
+*/
+
 public class TheActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     final String LOG_TAG = TheActivity.class.getSimpleName();
