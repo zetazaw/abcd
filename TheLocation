@@ -80,24 +80,6 @@ public class TheLocationActivity extends AppCompatActivity implements GoogleApiC
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_CHECK_SETTINGS){
-            if (resultCode == RESULT_OK){
-                Log.d(LOG_TAG, "Setting Result OK!");
-                tvResult.setText("Setting Result OK!");
-            }else {
-                Log.d(LOG_TAG, "Setting Result Rejected!");
-                tvResult.setText("Setting Result Rejected!");
-            }
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.d(LOG_TAG, "On Connection Suspended!");
-    }
-
     public void reqLocation() {
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(10000);
@@ -122,8 +104,10 @@ public class TheLocationActivity extends AppCompatActivity implements GoogleApiC
             @Override
             public void onLocationChanged(Location location) {
                 if (location != null) {
-                    Log.d(LOG_TAG, "location update:"+ location.toString());
+                    Log.d(LOG_TAG, "location update:" + location.toString());
                     tvResult.setText(location.toString());
+                    LocationServices.FusedLocationApi.removeLocationUpdates(
+                            mGoogleApiClient, this);
                 }
             }
         });
@@ -144,7 +128,6 @@ public class TheLocationActivity extends AppCompatActivity implements GoogleApiC
                         Log.d(LOG_TAG, "Resolution required!");
                         try {
                             status.startResolutionForResult(TheLocationActivity.this, REQUEST_CHECK_SETTINGS);
-
                         } catch (IntentSender.SendIntentException e) {
                             e.printStackTrace();
                         }
@@ -158,4 +141,24 @@ public class TheLocationActivity extends AppCompatActivity implements GoogleApiC
             }
         });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CHECK_SETTINGS){
+            if (resultCode == RESULT_OK){
+                Log.d(LOG_TAG, "Setting Result OK!");
+                tvResult.setText("Setting Result OK!");
+            }else {
+                Log.d(LOG_TAG, "Setting Result Rejected!");
+                tvResult.setText("Setting Result Rejected!");
+            }
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(LOG_TAG, "On Connection Suspended!");
+    }
+
+
 }
