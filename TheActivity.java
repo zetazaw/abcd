@@ -130,6 +130,7 @@ public class TheMainActivity extends AppCompatActivity implements GoogleApiClien
         mLocationRequest.setPriority(LocationRequest.PRIORITY_LOW_POWER);
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+        .setAlwaysShow(true)
                 .addLocationRequest(mLocationRequest);
 
         PendingResult<LocationSettingsResult> result =
