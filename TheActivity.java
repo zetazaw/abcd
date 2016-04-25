@@ -28,6 +28,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+/*
+TheActivity may need to compile 'com.google.android.gms:play-services:8.4.0' and
+these two permission
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+ */
 public class TheMainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,LocationListener {
 
     final String LOG_TAG = TheMainActivity.class.getSimpleName();
