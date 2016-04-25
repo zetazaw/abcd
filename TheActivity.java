@@ -1,7 +1,6 @@
-package com.iscistech.mobile.locationtest;
+package net.konyan.test.locationtest;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -13,9 +12,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
@@ -25,20 +22,15 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
-import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-/*
-I use compile 'com.google.android.gms:play-services:8.4.0' dependenciy to get device location country
-*/
+public class TheMainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,LocationListener {
 
-public class TheActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
-
-    final String LOG_TAG = TheActivity.class.getSimpleName();
+    final String LOG_TAG = TheMainActivity.class.getSimpleName();
 
     final int REQUEST_CHECK_SETTINGS = 89;
 
@@ -49,13 +41,12 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_the_main);
+        //setContentView(null);
 
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
                     .build();
         }
@@ -68,6 +59,8 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
                 Log.d(LOG_TAG, "Setting changed!");
                 createLocationRequest();
             }
+        }else if (requestCode == REQUEST_CHECK_SETTINGS){
+            Log.d(LOG_TAG, "Result not ok");
         }
     }
 
@@ -86,12 +79,17 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
         if (mLastLocation != null) {
-            //go geo-coder Async task. Can also use IntentService with broadcast receiver
+            //go geo-coder
             new FetchLocation().execute(mLastLocation);
         } else {
             Log.d(LOG_TAG, "Location is not available");
             createLocationRequest();
         }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
     }
 
     protected void startLocationUpdates() {
@@ -136,13 +134,14 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
             @Override
             public void onResult(LocationSettingsResult locationSettingsResult) {
                 final Status status = locationSettingsResult.getStatus();
-                
-                switch (status.getStatusCode()){
+                //final LocationSettingsStates states= locationSettingsResult.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:
                         Log.d(LOG_TAG, "Setting Success");
                         startLocationUpdates();
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        Log.d(LOG_TAG, "Resolution required!");
                         try {
                             status.startResolutionForResult(TheMainActivity.this, REQUEST_CHECK_SETTINGS);
                         } catch (IntentSender.SendIntentException e) {
@@ -150,6 +149,7 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
                         }
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        Log.d(LOG_TAG, "User not allowed to change location setting!");
                         break;
                     default:
                         break;
@@ -157,16 +157,6 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
 
             }
         });
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
     }
 
     @Override
@@ -190,10 +180,11 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
     @Override
     public void onLocationChanged(Location location) {
         Log.d(LOG_TAG, "Updated Location>" +location.toString());
-        if (location!=null){ // it was stupid checking
+        if (location!=null){
             new FetchLocation().execute(location);
         }
     }
+
 
     class FetchLocation extends AsyncTask<Location, Integer, String> {
 
@@ -232,9 +223,9 @@ public class TheActivity extends AppCompatActivity implements GoogleApiClient.Co
         @Override
         protected void onPostExecute(String s) {
             if (s!=null){
-                Log.d(LOG_TAG, "Async Result>"+s);
+                Log.d(LOG_TAG, ">>>>>>>>>>>>>>>>>>>>>>"+s);
             }else {
-                Log.d(LOG_TAG, "<<<Async Result No Data>>>");
+                Log.d(LOG_TAG, "<<<No Data>>>");
             }
         }
     }
